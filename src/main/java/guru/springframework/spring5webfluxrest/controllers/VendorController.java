@@ -37,9 +37,31 @@ public class VendorController {
         return vendorRepository.saveAll(vendorStream).then();
     }
 
-    @PutMapping("api/v1/vendors/{id}")
+    @PutMapping("/api/v1/vendors/{id}")
     Mono<Vendor> update(@PathVariable String id, @RequestBody Vendor vendor){
         vendor.setId(id);
         return vendorRepository.save(vendor);
+    }
+
+    @PatchMapping("/api/v1/vendors/{id}")
+    Mono<Vendor> patch(@PathVariable String id, @RequestBody Vendor vendor) {
+        Vendor foundVendor = vendorRepository.findById(id).block();
+        Boolean changed = false;
+
+        if (foundVendor.getFirstName() != vendor.getFirstName()) {
+            foundVendor.setFirstName(vendor.getFirstName());
+            changed = true;
+        }
+
+        if (foundVendor.getLastName() != vendor.getLastName()) {
+            foundVendor.setLastName(vendor.getLastName());
+            changed = true;
+        }
+
+        if (changed) {
+            return vendorRepository.save(foundVendor);
+        }
+
+        return Mono.just(foundVendor);
     }
 }
